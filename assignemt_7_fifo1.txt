@@ -1,0 +1,54 @@
+#include<stdio.h>
+#include<fcntl.h>
+#include<string.h>
+#include<unistd.h>
+#include<sys/stat.h>
+#include<sys/types.h>
+int main()
+{
+	int fd1,fd2,cnt=0;
+	char *myfifo1="file1";
+	char *myfifo2="file2";
+	char str1[100],str2[100];
+	char c;
+	// create fifo   pipes (files)
+	
+	fd1 = mkfifo(myfifo1,0666);  // 2nd param  no 6 is permissions for owener , group_owner , others  it is a read and write permissions for all
+	fd2 = mkfifo(myfifo2,0666);  // read(r) = 4 , write(w) = 2 , execute = 1
+	
+	// read  data to write on first  fifo pipe
+	printf("\n\tEnter String :: ");
+	fgets(str1,100,stdin);
+	/*
+	while( (c= getchar()) != '#')   
+	{
+		str1[cnt++] = c;
+	}
+	str1[cnt] = '\0';*/
+	printf("%s",str1);
+	
+	
+	
+	// write data on first fifo pipe
+	
+	fd1 = open(myfifo1,O_WRONLY);   //  fd1 is a address of the starting character which is given by the open() fun.
+	write(fd1,str1,strlen(str1)+1); // str1 is a source of the data  , strlen(str1)+1 length of string  and +1 is for '\0'
+	close(fd1);
+	
+	// Read data from second pipe
+	
+	fd2  = open(myfifo2,O_RDONLY);
+	read(fd2,str2,100);
+	
+	printf("\n\tMessage from fifo2 process :\n\t %s",str2);
+	
+	close(fd2); // close second fifo2 file
+	
+	
+	
+	
+	
+	
+	return 0;
+}
+

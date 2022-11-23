@@ -1,0 +1,29 @@
+
+
+#include<stdio.h>
+#include<sys/ipc.h>
+#include<sys/shm.h>
+
+int main()
+{
+	 
+	 //  ftok generate unique key 
+	 key_t key  =  ftok("shmfile",65);  //  shmfile is  file name of shared memory  , 65 is associated with that file
+	 
+	 // shmget fun create the shared memory  it  contains 3 parameter key , size of the data that you want to write (bytes of data ) , mode of the file read & write  r=4 w = 2 exe = 1
+	 // IPC_CREAT = it create the shared memory 
+	 int shmid = shmget(key,1024,0666|IPC_CREAT);
+	 
+	 char *str = (char*) shmat(shmid,(void*)0,0); //   attach shared memory to  writting process 
+	 						//  shmid  - it is given by shmget func , (void*)0 - address we are provided ,  0 - shmgflag  (it is shared among all all the process)
+	 						// it return the character ptr (it returns the starting point of the shared memory )
+	 						
+	 printf("\n\twrite data :");
+	 gets(str);
+	 
+	 printf("\n\t Data written in memory : %s ",str);
+	 
+	 
+	 shmdt(str); //  detach the shared memory  
+	return 0;
+}

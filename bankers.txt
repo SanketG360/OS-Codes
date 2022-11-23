@@ -1,0 +1,128 @@
+#include<stdio.h>
+int max[10][10];
+int allocation[10][10];
+int need[10][10];
+int avail[10];
+int np,nr;
+void readmatrix(int matrix[10][10])
+{
+	int i,j;
+	for(i=0;i<np;i++)
+	{
+		for(j=0;j<nr;j++)
+		{
+			scanf(" %d",&matrix[i][j]);
+		}
+	}
+}
+void display_matrix(int matrix[10][10])
+{
+	int i,j;
+	for(i=0;i<np;i++)
+	{
+		printf("\n P %d",i);
+		for(j=0;j<nr;j++)
+		{
+			printf(" %d",matrix[i][j]);
+		}
+	}
+}
+void calculate_need()
+{
+		int i,j;
+	for(i=0;i<np;i++)
+	{
+		for(j=0;j<nr;j++)
+		{
+			need[i][j] = max[i][j]-allocation[i][j];
+		}
+	}	
+}
+void banker()
+{
+		int i,j,k=0,flag;
+		int finish[10],safe_seq[10];
+		for(i=0;i<np;i++)
+		{
+			finish[i]=0;  // declare all processes are incomplete
+		}
+		for(i=0;i<np;i++)
+		{
+			flag=0;
+			if(finish[i]==0)  // execute the incomplete processes
+			{
+				for(j=0;j<nr;j++)
+				{
+					if(need[i][j]>avail[j])
+					{
+						flag=1;  // break a loop as need  is greater than avail and goto next process
+						break;
+					}
+				}
+				if(flag==0)  // need is a lesser than  avail so complete processs
+				{
+					finish[i]=1;
+					safe_seq[k]=i;
+					k++;
+					for(j=0;j<nr;j++)
+					{
+						avail[j]+=allocation[i][j];
+					}
+					i=-1;
+				}	
+			}
+		}
+		flag=0;  // check all proceeses are completed or not
+		for(i=0;i<np;i++)
+		{
+			if(finish[i]==0)
+			{
+				printf("\nThe System is deadlock");
+				flag=1;
+				break;	
+			}
+		}
+		if(flag==0)
+		{
+			printf("\nThe System is in safe state ! \n Safe Sequence is ==>");
+			for(i=0;i<np;i++)
+			{
+				printf("P%d ",safe_seq[i]);
+			}	
+		}
+}
+int main()
+{
+	int j;
+	// read the input from the user
+	printf("\nEnter number of prcessses");
+	scanf("%d",&np);
+	printf("\nEnter number of resources");
+	scanf("%d",&nr);
+	printf("\nEnter initial allocation matrix :");
+	readmatrix(allocation);
+	printf("\nEnter Max requirement matrix :");
+	readmatrix(max);
+	printf("\nEnter available resources :");
+	for(j=0;j<nr;j++)
+	{
+			scanf(" %d",&avail[j]);
+	}
+	// Display entered data
+	printf("\n************Entered Data **************\n\n");
+	printf("\nInitial Allocation :\n");
+	display_matrix(max);
+	printf("\n available resources :");
+	for(j=0;j<nr;j++)
+	{
+			printf(" %d",avail[j]);
+	}
+	// calculate and display need
+	calculate_need();
+	printf("\n\n\nNeed is \n");
+	display_matrix(need);
+	// execute the process using bankers algo.
+	banker();
+	printf("\n\n\n\n");
+	return 0;
+}

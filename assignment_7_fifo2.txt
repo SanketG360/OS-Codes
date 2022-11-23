@@ -1,0 +1,84 @@
+#include<stdio.h>
+#include<fcntl.h>
+#include<string.h>
+#include<unistd.h>
+#include<sys/stat.h>
+#include<sys/types.h>
+int main()
+{
+	FILE *fp;
+	int fd1,fd2,i,l=1,w=1,c=0;
+	char *myfifo1="file1";
+	char *myfifo2="file2";
+	char str1[100],str2[100];
+	char ch;
+	
+	// Read sentences from first  mufifo1 file
+	
+	fd1 = open(myfifo1,O_RDONLY);
+	read(fd1,str1,100); 			// fd1  address of the first chracter in the file  it stores the data into str1  and 100 is  amount of data  that you want to read (100 bytes of data you read)
+	printf("\n\tPipe1 : %s",str1);
+	
+	
+	// count number of  lines characters and words in sentences
+	
+	i=0;
+	while(str1[i]!='\0')
+	{
+		if(str1[i]==' ' && str1[i]=='\n')
+		{
+			l++;
+		}
+		else if(str1[i]==' ')
+		{
+			w++;
+		}
+		else
+		{	
+			c++;
+		}
+		i++;
+	}	
+		
+	//  check the result 
+	
+	printf("\n\tNo of lines : %d",l);	
+	printf("\n\tNo of words : %d",w);
+	printf("\n\tNo of characters : %d",c);
+	
+	
+	// write the counnted line ,word, characters data in text file
+	
+	
+	fp =  fopen("kp.txt","w");
+	fprintf(fp,"\n No of lines : %d",l);
+	fprintf(fp,"\n No of words : %d",w);
+	fprintf(fp,"\n No of characters : %d",c);
+	fclose(fp);
+	
+	// close file 
+	
+
+	//  read data from the file 
+	fp =  fopen("kp.txt","r");
+	ch = fgetc(fp);
+	i=0;
+	while(ch!=EOF)
+	{
+		str2[i] = ch;
+		i++;
+		ch = fgetc(fp);
+	}
+	str2[i]='\0';
+	fclose(fp);
+	
+	close(fd1); // close fifo1 file
+	
+	//  write data of text file on second file 
+	
+	fd2  =  open(myfifo2,O_WRONLY);
+	write(fd2,str2,strlen(str2)+1);
+	close(fd2);
+	return 0;
+}
+

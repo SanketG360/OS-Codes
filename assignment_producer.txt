@@ -1,0 +1,96 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<pthread.h>
+#include<semaphore.h>
+#define BUFFER_SIZE 5
+void inti();
+void* producer(void *arg);
+void* consumer(void *arg);
+int item = 1;
+typedef struct
+{
+	int in;
+	int out;
+	int buff[BUFFER_SIZE];
+	sem_t full; 
+	sem_t empty;
+	pthread_mutex_t buff_lock;
+	
+}buffer;
+buffer b;
+int cnt=0;
+
+int main(void)
+{
+	int np,nc,i;
+	pthread_t pid[10],cid[10];
+	init();
+	printf("\n\tEnter the  number of producers :");
+	scanf("%d",&np);
+	printf("\n\tEnter the  number of consumers :");
+	scanf("%d",&nc);
+	for(i=0;i<np;i++)
+	{
+		int *arg = malloc(sizeof(int*));
+		*arg = i;
+		pthread_create(&pid[i],NULL,producer,arg);
+	}
+	for(i=0;i<nc;i++)
+	{
+		int *arg = malloc(sizeof(int*));
+		*arg = i;
+		pthread_create(&cid[i],NULL,consumer,arg);
+	}
+	for(i=0;i<np;i++)
+	{
+		pthread_join(pid[i],NULL);
+	}
+	for(i=0;i<nc;i++)
+	{
+		pthread_join(cid[i],NULL);
+	}
+	pthread_mutex_destroy(&b.buff_lock);
+	sem_destroy(&b.empty);
+	sem_destroy(&b.full);
+	return 0;
+}
+void init()
+{
+	sem_init(&b.empty,0,BUFFER_SIZE);
+	sem_init(&b.full,0,0);
+	pthread_mutex_init(&b.buff_lock,NULL);
+	b.in=0;
+	b.out=0;
+}
+
+
+void* producer(void *arg)
+{
+	int i = *(int*)arg;
+	while(1)
+	{
+		sem_wait(&b.empty);
+		pthread_mutex_lock(&b.buff_lock);
+   		 printf("\nProducer %d has produced item number %d (|)", i+1, item);     
+		b.buff[(b.in++)%BUFFER_SIZE] = item++;
+		pthread_mutex_unlock(&b.buff_lock);
+		sem_post(&b.full);
+		sleep(3);
+	}
+}
+
+
+void* consumer(void *arg)
+{
+	int i = *(int*)arg;
+	while(1)
+	{
+		sem_wait(&b.full);
+		pthread_mutex_lock(&b.buff_lock);
+	        printf("\nConsumer %d has produced item number %d (X)", i+1,b.buff[(b.out++)%BUFFER_SIZE]);   
+		pthread_mutex_unlock(&b.buff_lock);
+		sem_post(&b.empty);
+		sleep(2);
+	}
+}
+
